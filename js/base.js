@@ -62,7 +62,7 @@
         render_task_detail(index);
         //保存当前索引
         current_index=index;
-        //显示详情模板（默认隐藏） （注：jQuery方法  show() 显示元素  ）
+        //显示详情模板（默认隐藏） （注：jQuery方法  show() 显示元素 ）
         $task_detail.show();
         //显示mask（默认隐藏）
         $task_detail_mask.show();
@@ -74,8 +74,6 @@
         //合并新旧数据
         task_list[index]=$.extend({},task_list[index],data);
         refresh_task_list();
-        // console.log(task_list[index]);
-
     }
     //渲染指定Task的详细信息
     function render_task_detail(index){
@@ -155,19 +153,22 @@
         });
     }
 
+    //监听完成Task事件  根据input[checkbox]元素的checked属性
     function listen_checkbox_complete(){
         $checkbox_complete.on('click',function(){
             var $this=$(this);
-            console.log($this);
             var index=$this.parent().parent().data('index');
+            //取出被click的 item 在 LocalStorage 中的对象
             var item=get(index);
             //item.complete在第一次点击时，为undefined
             if(item.complete){//再点击一次表示  取消完成 更改为未完成
+                //在此处设置 checked 是无效的 因为update_task()函数会调用
+                // refresh_task_list()函数  会重新渲染模板(line:242)
+                // $this.attr('checked',true);
                 update_task(index,{complete:false});
-                $this.attr('checked',true);
+                console.log($this)
             }else{
                 update_task(index,{complete:true});
-                $this.attr('checked',false);
             }
         });
     }
@@ -216,14 +217,33 @@
     }
 
     //render_task_list函数  render所有Task模板
-    function render_task_list(){
-        var $task_list=$('.task-list');
+    function render_task_list() {
+        var $task_list = $('.task-list');
         //每次render之前，将$task_list的html清空
         $task_list.html(' ');
-        for(var i=0;i<task_list.length;i++) {
-            var $task = render_task_item(task_list[i], i);
-            $task_list.prepend($task);
+        var complete_item = [];
+        for (var i = 0; i < task_list.length; i++) {
+            var item = task_list[i];
+            //item && 因为元素删除之后为null  null.complete是存在的 会报错
+            if (item && item.complete) {
+                //保持在task_list中的index
+                complete_item[i]=item;
+            } else {
+                var $task = render_task_item(task_list[i], i);
+                $task_list.prepend($task);
+            }
         }
+
+        for (var j = 0; j < complete_item.length; j++) {
+            var $task = render_task_item(complete_item[j], j);
+            //因为保持了在task_list中的index  所以complete_item中的index是不连续的
+            //所以当循环到null时 直接跳过  否则null.addClass会报错
+            if(!$task){continue;}
+            $task.addClass('completed');
+            $task_list.append($task);
+        }
+
+
         //在render_task_list之后  也就是将结构添加到页面之后 才能取到相关元素
         $task_delete_trigger=$('.action.delete');
         $task_detail_trigger=$('.action.detail');
@@ -235,17 +255,35 @@
 
     }
 
+//render_task_item 函数  render 单条Task模板
+function render_task_item(data,index){//index主要用于定位 在删除时可以使用
+    //将整个html结构作为字符串   用data.content 更新里面内容  好厉害！！！！
+    if(!data||index===undefined){return;}
+    var list_item_tpl='<div class="task-item" data-index="'+ index + '">'+
+        '<span><input class="complete" type="checkbox"></span>'+
+        '<span class="task-content">'+data.content+'</span>'+
+        '<span class="fr">'+
+        '<span class="action delete"> 删除</span>'+
+        '<span class="action detail"> 详情</span>'+
+        '</span>'+
+        '</div>';
+    return $(list_item_tpl);//return list_item_tpl 也是ok的
+}
+
+
     //render_task_item 函数  render 单条Task模板
-    function render_task_item(data,index){//index主要用于定位 在删除时可以使用
+    function render_task_item(data,index) {//index主要用于定位 在删除时可以使用
         //将整个html结构作为字符串   用data.content 更新里面内容  好厉害！！！！
-        if(!data||index===undefined){return;}
-        var list_item_tpl='<div class="task-item" data-index="'+ index + '">'+
-            '<span><input class="complete" type="checkbox"></span>'+
-            '<span class="task-content">'+data.content+'</span>'+
-            '<span class="fr">'+
-            '<span class="action delete"> 删除</span>'+
-            '<span class="action detail"> 详情</span>'+
-            '</span>'+
+        if (!data || index === undefined) {
+            return;
+        }
+        var list_item_tpl = '<div class="task-item" data-index="' + index + '">' +
+            '<span><input class="complete" ' + (data.complete ? 'checked' : '') + ' type="checkbox"></span>' +
+            '<span class="task-content">' + data.content + '</span>' +
+            '<span class="fr">' +
+            '<span class="action delete"> 删除</span>' +
+            '<span class="action detail"> 详情</span>' +
+            '</span>' +
             '</div>';
         return $(list_item_tpl);//return list_item_tpl 也是ok的
     }
