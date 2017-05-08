@@ -3,25 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <title>My Todo App</title>
+    <link rel="stylesheet" href="node_modules/normalize.css/normalize.css">
     <link rel="stylesheet" href="css/base.css">
 </head>
 <body>
-<div class="container">
-   <div class="task-list">
-       <div class="task-item">item content</div>
-       <div class="task-item">item content</div>
-       <div class="task-item">item content</div>
-       <div class="task-item">item content</div>
-       <div class="task-item">item content</div>
-       <div class="task-item">item content</div>
-       <div class="task-item">item content</div>
-       <div class="task-item">item content</div>
-       <div class="task-item">item content</div>
-       <div class="task-item">item content</div>
+<div class="container"><!--总容器开始-->
+    <h1>My ToDo</h1>
+    <form class="add-task"><!--添加任务开始-->
+        <!--autocomplete="off"  不推荐之前填写过的内容-->
+        <input name="content"
+               type="text"
+               placeholder="e.g. 下午记得买菜"
+               autofocus
+               autocomplete="off"
+        ></input>
+        <!--<div style="width:100px;height: 100px;background-color: red"></div>-->
+        <button name="one" type="submit">submit</button>
+    </form><!--添加任务结束-->
 
-   </div>
-</div>
+    <div class="task-list"><!--清单列表开始-->
+
+       <!--<div class="task-item">&lt;!&ndash;任务开始&ndash;&gt;-->
+           <!--<span><input type="checkbox"></input></span>-->
+           <!--<span class="task-content">item content</span>-->
+           <!--<span>delete</span>-->
+           <!--<span>detail</span>-->
+       <!--</div>&lt;!&ndash;任务结束&ndash;&gt;-->
+
+   </div><!--清单列表结束-->
+
+    <div class="task-detail-mask"><!--遮罩开始-->
+    </div><!--遮罩结束-->
+
+    <div class="task-detail"><!--任务详情开始-->
+        <!--<div>-->
+        <!--<div class="content">&lt;!&ndash;任务标题开始&ndash;&gt;-->
+            <!--下午记得买菜-->
+        <!--</div> &lt;!&ndash;任务标题结束&ndash;&gt;-->
+
+        <!--<div>&lt;!&ndash;任务描述开始&ndash;&gt;-->
+            <!--<div class="desc">-->
+                <!--<textarea></textarea>-->
+            <!--</div>-->
+        <!--</div>&lt;!&ndash;任务描述结束&ndash;&gt;-->
+
+        <!--<div class="remind">&lt;!&ndash;任务定时提醒开始&ndash;&gt;-->
+            <!--<input type="date"></input>-->
+            <!--&lt;!&ndash;<button type="submit">submit</button>&ndash;&gt;-->
+        <!--</div>&lt;!&ndash;任务定时提醒结束&ndash;&gt;-->
+        <!--</div>-->
+
+    </div> <!--任务详情结束-->
+
+</div><!--总容器结束-->
+
+
 <script src="node_modules/jquery/dist/jquery.js"></script>
+<script src="node_modules/store/dist/store.everything.min.js"></script>
 <script src="js/base.js"></script>
 </body>
 </html>
