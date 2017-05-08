@@ -106,6 +106,26 @@ button[type='submit']{
     background: #ddd;
 }
 
+/*已完成Task样式*/
+.task-item.completed{
+    color:#aaa;
+    /*background: rgba(255,255,255,0.8);*/
+    opacity: 0.4;
+}
+
+.task-item.completed:after{
+    content: " ";
+    height: 1px;
+    background: #aaa;
+    width:97%;
+    display: block;
+    /*设置删除线的位置*/
+    position: relative;
+    bottom:8px;
+    float: right;
+}
+
+
 /*task-list  task-item task-content 样式*/
 .task-content{
     margin-left: 10px;
