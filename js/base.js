@@ -13,6 +13,10 @@
         ,$task_detail_content
         ,$task_detail_content_input
         ,$checkbox_complete
+        ,$msg=$('.msg')
+        ,$msg_content=$msg.find('.msg-content')
+        ,$msg_confirm=$msg.find('.confirmed')
+        ,$alerter=$('.alerter')
         ;
 
         //在开始时调用init()函数
@@ -22,6 +26,12 @@
     $form_add_task.on('submit',on_add_task_form_submit);
     //click mask 隐藏 task-detail
     $task_detail_mask.on('click',hide_task_detail);
+    //注册 提醒信息关闭button事件
+    function listen_msg_event() {
+        $msg.on('click',function(){
+            hide_msg();
+        });
+    }
 
 
 
@@ -91,7 +101,8 @@
             '</div>'+
             // '</div>'+
             '<div class="remind input-item">'+
-            '<input name="remind" type="date" value="'+item.remind+'"></input>'+
+            '<label>提醒时间</label>'+
+            '<input class="datetime" name="remind" type="text" value="'+(item.remind || '') + '">'+
             '</div>'+
             '<div class="input-item"><button type="submit">更新</button></div>'+
             '</form>';
@@ -101,6 +112,9 @@
         $task_detail.append(tpl);
         // or
         // $task_detail.html(tpl);
+
+        //使用 jquery-datetimepicker 插件
+        $('.datetime').datetimepicker();
 
         //选中其中的form元素 因为之后会使用其监听的submit事件
         $updata_form=$task_detail.find('form');
@@ -204,11 +218,55 @@
     //init()函数  取得store中的task_list对象
     function init(){
        task_list=store.get('task_list') || [];
+        listen_msg_event();
         // console.log(task_list);
         //在开始时，就显示task_list
         if(task_list.length) {
             render_task_list();
+            task_remind_check();
         }
+    }
+    //提醒时间
+    function task_remind_check(){
+        show_msg("fff");
+        //获取当前时间
+        var current_time;
+        var itl=setInterval(function(){
+            //遍历task_list
+            for(var i=0;i<task_list.length;i++){
+                var item=get(i),task_time;
+                if(!item || !item.remind || item.informed){
+                    continue;
+                }else{
+                    //将当前时间转换为时间戳(一个很大的数字 number类型)
+                    current_time=new Date().getTime();
+                    //将Task时间也转化为时间戳 便于与当前时间比较
+                    task_time=new Date(item.remind). getTime();
+
+                    if(current_time - task_time>=1){
+                        show_msg(item.content);
+                        //提醒过之后 添加informed属性
+                        update_task(i,{informed:true})
+                    }
+                }
+            }
+        },500);
+    }
+
+
+    //提醒函数
+    function show_msg(msg){
+        if(!msg){return;}
+        $msg_content.html(msg);
+        //提醒时播放音乐
+        $alerter.get(0).play();
+        $msg.show();
+    }
+
+    //隐藏提醒
+    function hide_msg(){
+        $msg.hide();
+        console.log(1);
     }
 
     //获取LocalStorage中  task_list中的某一项
@@ -254,22 +312,6 @@
         listen_checkbox_complete();
 
     }
-
-//render_task_item 函数  render 单条Task模板
-function render_task_item(data,index){//index主要用于定位 在删除时可以使用
-    //将整个html结构作为字符串   用data.content 更新里面内容  好厉害！！！！
-    if(!data||index===undefined){return;}
-    var list_item_tpl='<div class="task-item" data-index="'+ index + '">'+
-        '<span><input class="complete" type="checkbox"></span>'+
-        '<span class="task-content">'+data.content+'</span>'+
-        '<span class="fr">'+
-        '<span class="action delete"> 删除</span>'+
-        '<span class="action detail"> 详情</span>'+
-        '</span>'+
-        '</div>';
-    return $(list_item_tpl);//return list_item_tpl 也是ok的
-}
-
 
     //render_task_item 函数  render 单条Task模板
     function render_task_item(data,index) {//index主要用于定位 在删除时可以使用
