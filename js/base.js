@@ -3,6 +3,8 @@
     'use strict'
     //声明一群变量
     var $form_add_task=$('.add-task')
+        ,$window=$(window)
+        ,$body=$('body')
         ,task_list=[]
         ,$task_detail=$('.task-detail')
         ,$task_detail_mask=$(".task-detail-mask")
@@ -20,8 +22,7 @@
         ;
 
         //在开始时调用init()函数
-        init();
-
+    init();
     //为form注册submit事件
     $form_add_task.on('submit',on_add_task_form_submit);
     //click mask 隐藏 task-detail
@@ -31,6 +32,131 @@
         $msg.on('click',function(){
             hide_msg();
         });
+    }
+
+    //自制alert弹窗
+    function pop(arg) {
+        if(!arg){
+            console.error('pop title is require');
+        }
+        //配置对象
+        var conf={},$box,$mask, $title,$content,$confirm,$cancel,dfd,confirmed,timer;
+        // $.Deferred() 返回一个deferred 对象
+        dfd=$.Deferred();
+
+        //将输入参数 存入conf对象中
+        if(typeof arg == 'string'){
+            conf.title=arg;
+        }else{
+            conf=$.extend(conf,arg);
+        }
+
+        //创建一个 box div
+        $box=$('<div>' +
+            '<div class="pop-title">'+ conf.title +'</div>'+
+            '<div class="pop-content">' +
+            '<div>' +
+            '<button style= "margin-right: 5px" class="primary confirm">确定</button>'+
+            '<button class="cancel">取消</button>' +
+            '</div>' +
+            '</div>'+
+            '</div>')
+            .css({
+            color:'#444',
+            width:300,
+            height:'auto',
+            padding:10,
+            background:'#fff',
+            position:'fixed',
+            'border-radius':3,
+            'box-shadow':'0 1px 2px rgba(0,0,0,.5)',
+
+        });
+
+        //创建一个 mask div
+        $mask=$('<div></div>')
+            .css({
+                position:'fixed',
+                top:0,
+                bottom:0,
+                left:0,
+                right:0,
+                background:'rgba(0,0,0,.5)',
+            });
+        $title=$box.find('.pop-title').css({
+            padding:'5px 10px',
+            'font-weight':900,
+            'font-size':20,
+            'text-align':'center',
+        });
+
+        $content=$box.find('.pop-content').css({
+            padding:'5px 10px',
+            'text-align':'center',
+        });
+
+        $confirm=$content.find('button.confirm');
+        $cancel=$content.find('button.cancel');
+
+        //定时器 检测confirmed 不再为 undefined
+        timer=setInterval(function () {
+            //表示用户肯定点击了一个按钮  确定或取消
+            if(confirmed !== undefined){
+                //将状态改为已完成 并传入参数
+                dfd.resolve(confirmed);
+                //用户点击之后 不再检测 其实就检测一次点击
+                clearInterval(timer);
+                dismiss_pop();
+            }
+        },50);
+        //执行pop函数之后，我们不知道用户什么时候回点击"确定"
+
+        function on_confirmed() {
+            confirmed = true;
+        }
+        function on_cancel() {
+            confirmed = false;
+        }
+
+        $confirm.on('click',on_confirmed);
+        $cancel.on('click',on_cancel);
+        $mask.on('click',on_cancel);
+
+
+        function dismiss_pop() {
+            //remove() 直接将html结构从文档中删除
+            $mask.remove();
+            $box.remove();
+        }
+
+        //调整box的位置
+        function adjust_box_position(){
+            var window_width=$window.width()
+                ,window_height=$window.height()
+                ,box_width=$box.width()
+                ,box_height=$box.height()
+                ,move_x
+                ,move_y;
+            move_x=(window_width-box_width)/2;
+            move_y=(window_height-box_height)/2 -20;
+
+        //重新调整$box的css
+            $box.css({
+                left:move_x,
+                top:move_y,
+            })
+        }
+
+        //注册resize事件
+        $window.on('resize',function(){
+            adjust_box_position();
+        });
+
+        $body.append($mask);
+        $body.append($box);
+        //在$box append 到 body 之后 我们手动触发resize事件  否则刚打开网页的时候 box 不会居中（只有resize后才会居中）
+        $window.resize();
+        return dfd.promise();
     }
 
 
@@ -161,9 +287,14 @@
             var $this=$(this);//将当前点击的元素 编程一个jQuery对象
             var $item=$this.parent().parent();//找到删除按钮所在的task元素
             var index=$item.data('index');//与dataset的区别是什么？
-            var tmp=confirm('确定删除？');//确认删除
+            pop('确定删除？')
+                .then(function (r) {
+                    r ? delete_task(index) : null
+            });
+            //一下2行用pop函数替换了
+            // var tmp=confirm('确定删除？');//确认删除
             //delete_task(index)删除数组中的一个对象，这是数组中的响应位置为null
-            tmp ? delete_task(index) : null;
+            // tmp ? delete_task(index) : null;
         });
     }
 
@@ -228,7 +359,6 @@
     }
     //提醒时间
     function task_remind_check(){
-        show_msg("fff");
         //获取当前时间
         var current_time;
         var itl=setInterval(function(){
