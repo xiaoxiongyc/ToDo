@@ -148,7 +148,6 @@ button[type='submit']{
     color: #000;
     border-radius: 3px 0 0 3px;
     box-shadow: 0 1px 2px 1px rgba(0,0,0,0.1);
-
 }
 
 /*task-detail  content 样式*/
@@ -191,3 +190,22 @@ button[type='submit']{
     color: #333;
 }
 
+/*msg样式*/
+.msg{
+    display: none;
+    text-align: center;
+    background: #ffe264;
+    padding:10px;
+    color: #333;
+}
+
+/*定时提醒弹窗样式*/
+.anchor{
+    cursor: pointer;
+}
+
+/*提示铃声*/
+.alerter{
+    width:0;
+    height:0;
+}
