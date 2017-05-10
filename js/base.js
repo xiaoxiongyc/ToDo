@@ -240,7 +240,43 @@
         // $task_detail.html(tpl);
 
         //使用 jquery-datetimepicker 插件
-        $('.datetime').datetimepicker();
+
+        var $date_time_picker = $('.datetime').datetimepicker({
+            autoclose:true,//日期选择完成后是否关闭选择框
+            bootcssVer:3,//显示向左向右的箭头
+            language:'zh_CN',//语言
+            minView: "mouth",//表示日期选择的最小范围，默认是hour
+            //监听时间插件关闭时的事件
+            onClose: function() {
+                on_date_complete();
+            },
+            //监听时间插件显示时的事件
+            onShow:function () {
+                on_date_start();
+            }
+        });
+
+        //插件关闭的回调函数 判定设置时间是否过期
+        function on_date_complete(){
+            var result= new Date().getTime() - new Date($('.datetime').val()). getTime();
+            if(result >= 0){
+                $('.datetime')
+                    .css({
+                        color:'red',
+                        border:'1px red solid',
+                    });
+            }
+        }
+
+        //插件显示的回调函数 字体为黑色
+        function on_date_start() {
+            $('.datetime')
+                .css({
+                    color:'black',
+                    border:0,
+                });
+            
+        }
 
         //选中其中的form元素 因为之后会使用其监听的submit事件
         $updata_form=$task_detail.find('form');
@@ -373,6 +409,7 @@
                     //将Task时间也转化为时间戳 便于与当前时间比较
                     task_time=new Date(item.remind). getTime();
 
+                    //一旦当前时间大于提醒时间 马上提醒  之后不再提醒（添加informed:true 属性）
                     if(current_time - task_time>=1){
                         show_msg(item.content);
                         //提醒过之后 添加informed属性
